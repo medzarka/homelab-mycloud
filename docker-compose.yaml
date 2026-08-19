@@ -11,12 +11,22 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        echo ">>> [Init] Ensuring volume directory structure under /data..."
+        echo ">>> [Init] Creating storage directories..."
         mkdir -p /data/seafile/data /data/seafile/mariadb
         mkdir -p /data/immich/upload /data/immich/postgres /data/immich/models
-        echo ">>> [Init] Setting volume permissions (775)..."
-        chmod -R 775 /data
-        echo ">>> [Init] Volume directories initialized successfully!"
+
+        echo ">>> [Init] Setting ownership and permissions..."
+        # Set database directory ownerships (UID/GID 999 for MariaDB & PostgreSQL)
+        chown -R 999:999 /data/seafile/mariadb
+        chmod -R 750 /data/seafile/mariadb
+
+        chown -R 999:999 /data/immich/postgres
+        chmod -R 700 /data/immich/postgres
+
+        # Set shared read/write permissions for file and photo uploads
+        chmod -R 775 /data/seafile/data /data/immich/upload /data/immich/models
+
+        echo ">>> [Init] Storage volumes and permissions initialized successfully!"
 
   # ========================================================
   # SEAFILE SERVICES (Files and Documents)
