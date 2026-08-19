@@ -1,5 +1,24 @@
 services:
   # ========================================================
+  # INITIALIZATION SERVICE (Runs once to prepare host storage)
+  # ========================================================
+  init-volumes:
+    image: alpine:latest
+    container_name: mycloud_init_volumes
+    restart: "no"
+    volumes:
+      - ${DATA_DIR:-/srv/data/mycloud}:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo ">>> [Init] Ensuring volume directory structure under /data..."
+        mkdir -p /data/seafile/data /data/seafile/mariadb
+        mkdir -p /data/immich/upload /data/immich/postgres /data/immich/models
+        echo ">>> [Init] Setting volume permissions (775)..."
+        chmod -R 775 /data
+        echo ">>> [Init] Volume directories initialized successfully!"
+
+  # ========================================================
   # SEAFILE SERVICES (Files and Documents)
   # ========================================================
   seafile:
@@ -38,6 +57,8 @@ services:
         '
         exec /sbin/my_init -- /scripts/enterpoint.sh
     depends_on:
+      init-volumes:
+        condition: service_completed_successfully
       seafile-mariadb:
         condition: service_healthy
       seafile-memcached:
@@ -64,6 +85,9 @@ services:
       - ${SEAFILE_DB_DIR:-${DATA_DIR:-/srv/data/mycloud}/seafile/mariadb}:/var/lib/mysql
     networks:
       - shared_net
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -110,8 +134,12 @@ services:
     ports:
       - "${MYCLOUD_IP:-127.0.0.1}:${IMMICH_PORT:-2283}:2283"
     depends_on:
-      - immich-redis
-      - immich-postgres
+      init-volumes:
+        condition: service_completed_successfully
+      immich-redis:
+        condition: service_healthy
+      immich-postgres:
+        condition: service_started
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -131,6 +159,13 @@ services:
       - REDIS_HOSTNAME=immich_redis
     networks:
       - shared_net
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
+      immich-redis:
+        condition: service_healthy
+      immich-postgres:
+        condition: service_started
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -164,6 +199,9 @@ services:
       - ${IMMICH_DB_DIR:-${DATA_DIR:-/srv/data/mycloud}/immich/postgres}:/var/lib/postgresql/data
     networks:
       - shared_net
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
     shm_size: 128mb
     restart: unless-stopped
     logging:

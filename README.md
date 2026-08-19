@@ -22,18 +22,13 @@ Open `.env` and configure your credentials, base data directory, and domain/IP s
 - Set `DATA_DIR` to your preferred host storage path (e.g., `/srv/data/mycloud`).
 - Set `MYCLOUD_IP` (`127.0.0.1` for reverse proxy setups or `0.0.0.0` for direct network binding).
 
-### 2. Initialize Host Storage Directories
-```bash
-chmod +x setup_volumes.sh
-./setup_volumes.sh
-```
-
-### 3. Start the Stack
+### 2. Start the Stack
 ```bash
 docker compose up -d
 ```
+> **Note:** The stack includes an automated `init-volumes` service that creates all necessary directory structures (`seafile/data`, `seafile/mariadb`, `immich/upload`, `immich/postgres`, `immich/models`) and sets appropriate permissions automatically on boot before starting database and application services.
 
-### 4. Access Web Interfaces
+### 3. Access Web Interfaces
 - **Seafile Web UI**: `http://<YOUR_SERVER_IP>:9085` (or via configured domain)
 - **Immich Web UI**: `http://<YOUR_SERVER_IP>:2283` (or via configured domain)
 
