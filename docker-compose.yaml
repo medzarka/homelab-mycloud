@@ -245,3 +245,4 @@ services:
 networks:
   shared_net:
     name: ${SHARED_NETWORK:-shared_net}
+    external: true
