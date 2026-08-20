@@ -90,10 +90,7 @@ services:
     image: mariadb:10.11
     container_name: seafile-mariadb
     restart: unless-stopped
-    command:
-      - --innodb-buffer-pool-size=512M
-      - --innodb-log-file-size=128M
-      - --max-connections=200
+    command: ${SEAFILE_MARIADB_OPTIONS:---innodb-buffer-pool-size=512M --innodb-log-file-size=128M --max-connections=200}
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_MYSQL_ROOT_PASSWORD}
     volumes:
@@ -235,7 +232,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    shm_size: 512mb
+    shm_size: ${IMMICH_DB_SHM_SIZE:-512mb}
     restart: unless-stopped
     logging:
       driver: "json-file"
