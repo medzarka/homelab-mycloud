@@ -139,11 +139,12 @@ services:
     # Optional Hardware Acceleration (Uncomment only if host has a physical GPU at /dev/dri):
     # devices:
     #   - /dev/dri:/dev/dri
-    env_file:
-      - .env
     environment:
       - TZ=${TZ:-UTC}
       - DB_HOSTNAME=immich_postgres
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME:-immich}
+      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOSTNAME=immich_redis
     networks:
       - shared_net
@@ -174,11 +175,12 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     volumes:
       - ${IMMICH_CACHE_DIR:-${DATA_DIR:-/srv/data/mycloud}/immich/models}:/cache
-    env_file:
-      - .env
     environment:
       - TZ=${TZ:-UTC}
       - DB_HOSTNAME=immich_postgres
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME:-immich}
+      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOSTNAME=immich_redis
       - IMMICH_MACHINE_LEARNING_WORKERS=${IMMICH_MACHINE_LEARNING_WORKERS:-2}
     networks:
