@@ -48,6 +48,7 @@ services:
       - ${SEAFILE_DATA_DIR:-${DATA_DIR:-/srv/data/mycloud}/seafile/data}:/shared
     networks:
       - shared_net
+      - homelab_swarm_net
     ports:
       - "${MYCLOUD_IP:-127.0.0.1}:${SEAFILE_PORT:-9085}:80"
     entrypoint: ["/bin/sh", "-c"]
@@ -97,6 +98,7 @@ services:
       - ${SEAFILE_DB_DIR:-${DATA_DIR:-/srv/data/mycloud}/seafile/mariadb}:/var/lib/mysql
     networks:
       - shared_net
+      - homelab_swarm_net
     depends_on:
       init-volumes:
         condition: service_completed_successfully
@@ -119,6 +121,9 @@ services:
     entrypoint: memcached -m 256
     networks:
       shared_net:
+        aliases:
+          - memcached
+      homelab_swarm_net:
         aliases:
           - memcached
     logging:
@@ -148,6 +153,7 @@ services:
       - REDIS_HOSTNAME=immich_redis
     networks:
       - shared_net
+      - homelab_swarm_net
     ports:
       - "${MYCLOUD_IP:-127.0.0.1}:${IMMICH_PORT:-2283}:2283"
     depends_on:
@@ -185,6 +191,7 @@ services:
       - IMMICH_MACHINE_LEARNING_WORKERS=${IMMICH_MACHINE_LEARNING_WORKERS:-2}
     networks:
       - shared_net
+      - homelab_swarm_net
     depends_on:
       init-volumes:
         condition: service_completed_successfully
@@ -204,6 +211,7 @@ services:
     image: redis:6.2-alpine
     networks:
       - shared_net
+      - homelab_swarm_net
     healthcheck:
       test: redis-cli ping || exit 1
     restart: unless-stopped
@@ -225,6 +233,7 @@ services:
       - ${IMMICH_DB_DIR:-${DATA_DIR:-/srv/data/mycloud}/immich/postgres}:/var/lib/postgresql/data
     networks:
       - shared_net
+      - homelab_swarm_net
     depends_on:
       init-volumes:
         condition: service_completed_successfully
@@ -245,4 +254,7 @@ services:
 networks:
   shared_net:
     name: ${SHARED_NETWORK:-shared_net}
+    external: true
+  homelab_swarm_net:
+    name: ${SWARM_NETWORK:-homelab_swarm_net}
     external: true
