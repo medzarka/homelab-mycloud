@@ -6,7 +6,7 @@ services:
     image: alpine:latest
     container_name: mycloud_init_volumes
     user: "0:0"
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - ${DATA_DIR:-/srv/data/mycloud}:/data
     entrypoint: ["/bin/sh", "-c"]
@@ -28,6 +28,14 @@ services:
         chmod -R 775 /data/seafile/data /data/immich/upload /data/immich/models
 
         echo ">>> [Init] Storage volumes and permissions initialized successfully!"
+        touch /tmp/init_ready
+        sleep infinity
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/init_ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   # ========================================================
   # SEAFILE SERVICES (Files and Documents)
@@ -68,7 +76,7 @@ services:
         exec /sbin/my_init -- /scripts/enterpoint.sh
     depends_on:
       init-volumes:
-        condition: service_completed_successfully
+        condition: service_healthy
       seafile-mariadb:
         condition: service_healthy
       seafile-memcached:
@@ -99,7 +107,7 @@ services:
       - homelab_swarm_net
     depends_on:
       init-volumes:
-        condition: service_completed_successfully
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -154,7 +162,7 @@ services:
       - homelab_swarm_net
     depends_on:
       init-volumes:
-        condition: service_completed_successfully
+        condition: service_healthy
       immich-redis:
         condition: service_healthy
       immich-postgres:
@@ -190,7 +198,7 @@ services:
       - homelab_swarm_net
     depends_on:
       init-volumes:
-        condition: service_completed_successfully
+        condition: service_healthy
       immich-redis:
         condition: service_healthy
       immich-postgres:
@@ -232,7 +240,7 @@ services:
       - homelab_swarm_net
     depends_on:
       init-volumes:
-        condition: service_completed_successfully
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d ${DB_DATABASE_NAME:-immich} -U ${DB_USERNAME:-postgres}"]
       interval: 10s
