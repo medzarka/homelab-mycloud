@@ -87,6 +87,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.seafile.rule=Host(`mycloud.${ROOT_DOMAIN:-example.com}`, `seafile.${ROOT_DOMAIN:-example.com}`)"
+      - "traefik.http.routers.seafile.entrypoints=websecure"
+      - "traefik.http.routers.seafile.tls=true"
+      - "traefik.http.routers.seafile.middlewares=app-fail2ban@file,security-headers@file"
+      - "traefik.http.services.seafile.loadbalancer.server.port=80"
+      - "traefik.docker.network=${SHARED_NETWORK:-shared_net}"
     logging:
       driver: "json-file"
       options:
@@ -173,6 +181,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.immich.rule=Host(`photos.${ROOT_DOMAIN:-example.com}`, `immich.${ROOT_DOMAIN:-example.com}`)"
+      - "traefik.http.routers.immich.entrypoints=websecure"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.routers.immich.middlewares=app-fail2ban@file,security-headers@file"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+      - "traefik.docker.network=${SHARED_NETWORK:-shared_net}"
     restart: unless-stopped
     logging:
       driver: "json-file"
