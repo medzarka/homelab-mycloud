@@ -12,6 +12,8 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        echo ">>> [Init] Delaying boot by 15s to allow Docker Swarm overlay networks to initialize..."
+        sleep 15
         echo ">>> [Init] Creating storage directories..."
         mkdir -p /data/seafile/data /data/seafile/mariadb
         mkdir -p /data/immich/upload /data/immich/postgres /data/immich/models
@@ -35,7 +37,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 5s
+      start_period: 15s
 
   # ========================================================
   # SEAFILE SERVICES (Files and Documents)
@@ -240,6 +242,9 @@ services:
     networks:
       - shared_net
       - homelab_swarm_net
+    depends_on:
+      init-volumes:
+        condition: service_healthy
     healthcheck:
       test: redis-cli ping || exit 1
     restart: unless-stopped
