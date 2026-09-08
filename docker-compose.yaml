@@ -136,6 +136,9 @@ services:
     image: memcached:1.6-alpine
     container_name: seafile-memcached
     restart: unless-stopped
+    depends_on:
+      init-volumes:
+        condition: service_healthy
     entrypoint: memcached -m 256
     networks:
       shared_net:
