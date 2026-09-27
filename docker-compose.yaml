@@ -26,6 +26,9 @@ services:
         chown -R 999:999 /data/immich/postgres
         chmod -R 700 /data/immich/postgres
 
+        # Set Seafile data ownership to root (required by Seafile's startup script)
+        chown -R 0:0 /data/seafile/data
+
         # Set shared read/write permissions for file and photo uploads
         chmod -R 775 /data/seafile/data /data/immich/upload /data/immich/models
 
